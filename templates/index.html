@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head><title>Clustering App</title></head>
+<body>
+<h1>Upload CSV for Clustering</h1>
+<form method="POST" enctype="multipart/form-data">
+    <input type="file" name="csv_file" required>
+    <input type="submit" value="Upload">
+</form>
+
+{% if show_k_input %}
+<img src="{{ silhouette_img }}" width="300">
+<img src="{{ elbow_img }}" width="300">
+<img src="{{ db_img }}" width="300">
+
+<form method="POST" action="/cluster">
+    <label>Enter number of clusters:</label>
+    <input type="number" name="k" min="2" max="20" required>
+    <input type="submit" value="Cluster">
+</form>
+{% endif %}
+
+{% if pca_img %}
+<h2>PCA Clustering Plot</h2>
+<img src="{{ pca_img }}" width="500">
+{% endif %}
+
+{% if map_future %}
+<h2>Future Cluster Map (2021–2024)</h2>
+<iframe src="{{ map_future }}" width="100%" height="500" style="border:none;"></iframe>
+{% endif %}
+
+<!-- Past cluster map -->
+{% if map_past %}
+<h2>Past Cluster Map (1981–2020)</h2>
+<iframe src="{{ map_past }}" width="100%" height="500" style="border:none;"></iframe>
+{% endif %}
+
+<!-- Transition map -->
+{% if map_transition %}
+<h2>Cluster Transition Map (Changed Points)</h2>
+<iframe src="{{ map_transition }}" width="100%" height="500" style="border:none;"></iframe>
+{% endif %}
+</body>
+</html>
