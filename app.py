@@ -32,7 +32,6 @@ def index():
 @app.route('/cluster', methods=['POST'])
 def cluster():
     k = int(request.form['k'])
-    df = pd.read_csv(os.path.join(UPLOAD_FOLDER, 'uploaded.csv'))
 
     results = run_clustering_pipeline(
         csv_path=os.path.join(UPLOAD_FOLDER, 'uploaded.csv'),

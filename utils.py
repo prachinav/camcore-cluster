@@ -165,34 +165,51 @@ def run_clustering_pipeline(csv_path, k, output_dir):
             on='id'
         )
         changed = merged[merged['future'] != merged['past']]
-        m = folium.Map(location=[changed['lat'].mean(), changed['lon'].mean()], zoom_start=6)
+        changed = changed.dropna(subset=['lat', 'lon'])
 
-        for _, row in changed.iterrows():
-            folium.CircleMarker(
-                location=(row['lat'], row['lon']),
-                radius=6,
-                color='red',
-                fill=True,
-                fill_opacity=0.8
-            ).add_to(m)
+        if not changed.empty:
+            m = folium.Map(location=[changed['lat'].mean(), changed['lon'].mean()], zoom_start=6)
 
-            folium.map.Marker(
-                [row['lat'], row['lon']],
-                icon=DivIcon(
-                    icon_size=(150, 36),
-                    icon_anchor=(0, 0),
-                    html=f'<div style="font-size: 10pt; color: red; background: white; padding: 1px 2px;">{row["id"]}</div>'
-                )
-            ).add_to(m)
+            for _, row in changed.iterrows():
+                folium.CircleMarker(
+                    location=(row['lat'], row['lon']),
+                    radius=6,
+                    color='red',
+                    fill=True,
+                    fill_opacity=0.8
+                ).add_to(m)
 
-        legend = """
-        <div style="position: fixed; bottom: 30px; left: 30px; width: 180px; background: white; border:2px solid red; z-index:9999; padding: 10px;">
-        <b>Changed Clusters</b><br>
-        <i style="background:red;width:12px;height:12px;display:inline-block;margin-right:5px;"></i>Cluster Change
-        </div>
-        """
-        m.get_root().html.add_child(folium.Element(legend))
+                folium.map.Marker(
+                    [row['lat'], row['lon']],
+                    icon=DivIcon(
+                        icon_size=(150, 36),
+                        icon_anchor=(0, 0),
+                        html=f'<div style="font-size: 10pt; color: red; background: white; padding: 1px 2px;">{row["id"]}</div>'
+                    )
+                ).add_to(m)
+
+            legend = """
+            <div style="position: fixed; bottom: 30px; left: 30px; width: 180px; background: white; border:2px solid red; z-index:9999; padding: 10px;">
+            <b>Changed Clusters</b><br>
+            <i style="background:red;width:12px;height:12px;display:inline-block;margin-right:5px;"></i>Cluster Change
+            </div>
+            """
+            m.get_root().html.add_child(folium.Element(legend))
+        else:
+            valid_coords = future_df.dropna(subset=['lat', 'lon'])
+            center_lat = valid_coords['lat'].mean() if not valid_coords.empty else 0
+            center_lon = valid_coords['lon'].mean() if not valid_coords.empty else 0
+            m = folium.Map(location=[center_lat, center_lon], zoom_start=6)
+
+            no_change_note = """
+            <div style="position: fixed; top: 30px; left: 30px; width: 250px; background: white; border:2px solid grey; z-index:9999; padding: 10px;">
+            <b>No cluster transitions detected</b><br>
+            </div>
+            """
+            m.get_root().html.add_child(folium.Element(no_change_note))
+
         m.save(os.path.join(output_dir, filename))
+
 
     # ---- Plot maps ----
     plot_map(df_future, "Future Clusters", "map_future.html")
